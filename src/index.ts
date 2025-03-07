@@ -44,7 +44,7 @@ app.use(helmet({xFrameOptions: { action: "deny" }}));
 app.use(limiter)
 app.use(errorHandler)
 app.use(session({
-    secret: process.env.SESSION_SCRET_KEY,
+    secret: process.env.SESSION_SCRET_KEY as string,
     resave: false,
     saveUninitialized: false,
 }))
