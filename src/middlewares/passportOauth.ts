@@ -16,6 +16,6 @@ export const usePassport = () => {
     })
 
     passport.deserializeUser((user, done) => {
-        done(null, user as Express.User | false | null)
+        done(null, user as any)
     })
 }
