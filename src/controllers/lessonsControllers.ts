@@ -4,14 +4,25 @@ import Courses from "../models/courses"
 
 export const getLessonsCourse = async(req:Request,res:Response)=>{
     try {
-        const lessons = await Lessons.findAll({
-            where:{courseId:req.params.id},
-        })
-        if(!lessons){
-            res.status(404).json({status:"error",message:"lessons not found"})
+        const planUser = (req as any).user.planId
+        const course = await Courses.findByPk(req.params.id)
+        if(!course){
+            res.status(404).json({status:"error",message:"course not found"})
         }
         else{
-            res.status(200).json({status:"success",data:lessons})
+            if(course.planId === null || course.planId === planUser){
+                const lessons = await Lessons.findAll({
+                    where:{courseId:req.params.id},
+                })
+                res.status(200).json({status:"success",data:lessons})
+            }
+            else{
+                const lessons = await Lessons.findAll({
+                    where:{courseId:req.params.id},
+                    attributes:{exclude:["video"]},
+                })
+                res.status(200).json({status:"success",data:lessons})
+            }
         }
     } catch (error:any) {
         res.status(404).json({status:"error",message:error.message})
@@ -25,7 +36,17 @@ export const getLessonById = async(req:Request,res:Response)=>{
             res.status(404).json({status:"error",message:"lessons not found"})
         }
         else{
-            res.status(200).json({status:"success",data:lesson})
+            const planUser = (req as any).user.planId
+            const course = await Courses.findByPk(lesson.courseId)
+            if(course?.planId === null || course?.planId === planUser){
+                res.status(200).json({status:"success",data:lesson})
+            }
+            else{
+                const lessons = await Lessons.findByPk(req.params.id,{
+                    attributes:{exclude:["video"]},
+                })
+                res.status(200).json({status:"success",data:lessons})
+            }
         }
     } catch (error:any) {
         res.status(404).json({status:"error",message:error.message})

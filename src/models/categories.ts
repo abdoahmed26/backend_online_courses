@@ -1,6 +1,5 @@
 import { DataTypes, Model } from "sequelize";
 import sequelize from "../config/db";
-import Courses from "./courses";
 
 interface categoriesAttributes {
     id?: number;
@@ -46,11 +45,5 @@ Categories.init(
         timestamps:true
     }
 )
-
-Categories.hasMany(Courses,{foreignKey:"categoryId",as:"courses"})
-Courses.belongsTo(Categories, {
-    foreignKey: "categoryId",
-    as: "category",
-});
 
 export default Categories;

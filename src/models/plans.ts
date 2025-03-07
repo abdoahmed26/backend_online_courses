@@ -2,6 +2,7 @@ import { DataTypes, Model } from "sequelize";
 import sequelize from "../config/db";
 import PlansFeatures from "./plansFeatures";
 import Features from "./features";
+import Courses from "./courses";
 
 interface PlanAttributes {
     id?: number;
@@ -43,6 +44,8 @@ Plans.init(
 );
 
 Plans.belongsToMany(Features,{through:PlansFeatures,foreignKey:"planId",as:"features"})
+Courses.belongsTo(Plans,{foreignKey:"planId",as:"plan"})
+Plans.hasMany(Courses,{foreignKey:"planId",as:"courses"})
 
 Features.belongsToMany(Plans,{through:PlansFeatures,foreignKey:"featureId",as:"plans"})
 

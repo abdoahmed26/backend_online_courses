@@ -3,6 +3,7 @@ import sequelize from "../config/db";
 import Categories from "./categories";
 import Lessons from "./lessons";
 import Reviews from "./reviews";
+import Plans from "./plans";
 
 interface CourseAttributes {
     id?: number;
@@ -13,6 +14,7 @@ interface CourseAttributes {
     level: string;
     author: string;
     categoryId: number;
+    planId?: number;
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -26,6 +28,7 @@ class Courses extends Model<CourseAttributes> implements CourseAttributes {
     public level!: string;
     public author!: string;
     public categoryId!: number;
+    public planId!: number;
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
 }
@@ -70,6 +73,16 @@ Courses.init(
             },
             onUpdate:"CASCADE",
             onDelete:"CASCADE"
+        },
+        planId:{
+            type:DataTypes.INTEGER,
+            allowNull:true,
+            references:{
+                model:Plans,
+                key:"id"
+            },
+            onUpdate:"CASCADE",
+            onDelete:"SET NULL"
         }
     },
     {
@@ -94,5 +107,11 @@ Courses.hasMany(Reviews,{
     },
     as:"reviews"
 })
+
+Categories.hasMany(Courses,{foreignKey:"categoryId",as:"courses"})
+Courses.belongsTo(Categories, {
+    foreignKey: "categoryId",
+    as: "category",
+});
 
 export default Courses

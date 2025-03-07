@@ -79,6 +79,7 @@ npm run dev
 - **👤 User Management** 
     - user can register new account
     - user can login 
+    - user can login with google
     - user can update his (personal infos, email, password)
     - user can reset his password in case of forgotten 
 - **Category Management**

@@ -16,7 +16,15 @@ export const login = async(req:Request,res:Response)=>{
                 res.status(400).json({status:"error",message:"invalid email or password"})
             }
             else{
-                const token = jwt.sign({id:user.id,name:user.full_name,email:user.email,role:user.role},process.env.JWT_SECRET as string,{expiresIn:"1d"})
+                const token = jwt.sign({id:user.id,name:user.full_name,email:user.email,role:user.role,planId:user.planId},process.env.JWT_SECRET as string,{expiresIn:"5m"})
+                const refresh_token = jwt.sign({id:user.id,name:user.full_name,email:user.email,role:user.role,planId:user.planId},process.env.JWT_SECRET_REFRESH as string,{expiresIn:"1d"})
+                res.cookie("refresh_token",refresh_token,{
+                    expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+                    path:"/",
+                    httpOnly:true,
+                    secure:true,
+                    sameSite:"lax"
+                })
                 res.status(200).json({status:"success",data:{token}})
             }
         }
@@ -40,6 +48,42 @@ export const register = async(req:Request,res:Response)=>{
         }
     } catch (error:any) {
         // console.error(error);
+        res.status(404).json({status:"error",message:error.message})
+    }
+}
+
+export const refresh = async(req:Request,res:Response)=>{
+    try {
+        const user = (req as any).user
+        const token = jwt.sign({id:user.id,name:user.name,email:user.email,role:user.role,planId:user.planId},process.env.JWT_SECRET as string,{expiresIn:"5m"})
+        res.status(200).json({status:"success",data:{token}})
+    }catch (error:any) {
+        res.status(404).json({status:"error",message:error.message})
+    }
+}
+
+export const loginGoogle = async(req:Request,res:Response)=>{
+    try {
+        const user = (req as any).user
+        const oldUser = await Users.findOne({where:{email:user.email},attributes:{exclude:["password"]}})
+        if(oldUser){
+            const token = jwt.sign({...oldUser},process.env.JWT_SECRET as string,{expiresIn:"1d"})
+            res.cookie("token",token,{expires:new Date(Date.now() + 24 * 60 * 60 * 1000)})
+            res.cookie("id",oldUser.id,{expires:new Date(Date.now() + 24 * 60 * 60 * 1000)})
+        }
+        else{
+            const newUser = await Users.create({
+                email:user.email,
+                full_name:user.displayName,
+                password:"",
+            })
+            await newUser.save()
+            const token = jwt.sign({id:newUser.id,name:newUser.full_name,email:newUser.email,role:newUser.role,planId:newUser.planId},process.env.JWT_SECRET as string,{expiresIn:"1d"})
+            res.cookie("token",token,{expires:new Date(Date.now() + 24 * 60 * 60 * 1000)})
+            res.cookie("id",newUser.id,{expires:new Date(Date.now() + 24 * 60 * 60 * 1000)})
+        }
+        res.redirect(`${process.env.FRONTEND_URL}/card-dashboard`)
+    } catch (error:any) {
         res.status(404).json({status:"error",message:error.message})
     }
 }
