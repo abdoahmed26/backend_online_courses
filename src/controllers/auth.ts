@@ -67,7 +67,7 @@ export const loginGoogle = async(req:Request,res:Response)=>{
         const user = (req as any).user
         const oldUser = await Users.findOne({where:{email:user.email},attributes:{exclude:["password"]}})
         if(oldUser){
-            const token = jwt.sign({...oldUser},process.env.JWT_SECRET as string,{expiresIn:"1d"})
+            const token = jwt.sign({id:oldUser.id,name:oldUser.full_name,email:oldUser.email,role:oldUser.role,planId:oldUser.planId},process.env.JWT_SECRET as string,{expiresIn:"1d"})
             res.cookie("token",token,{expires:new Date(Date.now() + 24 * 60 * 60 * 1000)})
             res.cookie("id",oldUser.id,{expires:new Date(Date.now() + 24 * 60 * 60 * 1000)})
         }
